@@ -52,11 +52,11 @@ contract MasterChefMod is Ownable {
     uint256 accUndestributedReward; // Accumulated rewards when a pool has no stake in it.
   }
 
-  /// @dev Reward token balance minus any pending rewards.
-  uint256 private rewardTokenBalance;
-
   /// @dev Division precision.
   uint256 private precision = 1e18;
+
+  /// @dev Reward token balance.
+  uint256 public rewardTokenBalance;
 
   /// @notice Total allocation points. Must be the sum of all allocation points in all pools.
   uint256 public totalAllocPoint;
@@ -74,20 +74,21 @@ contract MasterChefMod is Ownable {
   PoolInfo[] public poolInfo;
 
   /// @notice Period in which the latest distribution of rewards will end.
-  uint256 public periodFinish = 0;
+  uint256 public periodFinish;
 
   /// @notice Reward rate per second.
-  uint256 public rewardRate = 0;
+  uint256 public rewardRate;
 
   ///  @notice New rewards are equaly split between the duration.
-  uint256 public rewardsDuration = 7 days;
+  uint256 public rewardsDuration;
 
   /// @notice Detail of each user who stakes tokens.
   mapping(uint256 => mapping(address => UserInfo)) public userInfo;
   mapping(address => bool) private poolToken;
 
-  constructor(address _rewardToken) public {
+  constructor(address _rewardToken, uint256 _rewardsDuration) public {
     rewardToken = _rewardToken;
+    rewardsDuration = _rewardsDuration;
     timeDeployed = block.timestamp;
     periodFinish = timeDeployed.add(rewardsDuration);
   }
@@ -154,7 +155,7 @@ contract MasterChefMod is Ownable {
 
     require(
       poolToken[address(_token)] == false,
-      'MasterChef: Stake token has already been added'
+      'MasterChefMod: Stake token has already been added'
     );
 
     uint256 lastUpdateTime = block.timestamp;
@@ -240,7 +241,7 @@ contract MasterChefMod is Ownable {
     UserInfo storage user = userInfo[_pid][msg.sender];
     require(
       user.amount >= _amount,
-      'ERC20Farm: Withdraw amount is greater than user stake.'
+      'MasterChefMod: Withdraw amount is greater than user stake.'
     );
 
     _updatePool(_pid);
@@ -282,10 +283,14 @@ contract MasterChefMod is Ownable {
   }
 
   /// Adds and evenly distributes any rewards that were sent to the contract since last reward update.
-  function update(uint256 amount) external onlyOwner {
-    if (amount != 0) {
-      IERC20(rewardToken).safeTransferFrom(msg.sender, address(this), amount);
-    }
+  function updateRewards(uint256 amount) external onlyOwner {
+    require(
+      amount != 0,
+      'MasterChefMod: Reward amount must be greater than zero'
+    );
+
+    IERC20(rewardToken).safeTransferFrom(msg.sender, address(this), amount);
+    rewardTokenBalance = rewardTokenBalance.add(amount);
 
     if (totalAllocPoint == 0) {
       return;
@@ -293,28 +298,18 @@ contract MasterChefMod is Ownable {
 
     massUpdatePools();
 
-    uint256 currentBalance = IERC20(rewardToken).balanceOf(address(this));
-    // In case of reentrancy because of tokens that support fees.
-    if (rewardTokenBalance > currentBalance) {
-      rewardTokenBalance = currentBalance;
-      return;
+    uint256 newRewards = amount;
+
+    if (block.timestamp >= periodFinish) {
+      rewardRate = newRewards.div(rewardsDuration);
+    } else {
+      uint256 remaining = periodFinish.sub(block.timestamp);
+      uint256 leftover = remaining.mul(rewardRate);
+      rewardRate = newRewards.add(leftover).div(rewardsDuration);
     }
 
-    uint256 newRewards = currentBalance.sub(rewardTokenBalance);
-
-    if (newRewards != 0) {
-      if (block.timestamp >= periodFinish) {
-        rewardRate = newRewards.div(rewardsDuration);
-      } else {
-        uint256 remaining = periodFinish.sub(block.timestamp);
-        uint256 leftover = remaining.mul(rewardRate);
-        rewardRate = newRewards.add(leftover).div(rewardsDuration);
-      }
-
-      rewardTokenBalance = currentBalance;
-      totalCumulativeRewards = totalCumulativeRewards.add(newRewards);
-      periodFinish = block.timestamp.add(rewardsDuration);
-    }
+    totalCumulativeRewards = totalCumulativeRewards.add(newRewards);
+    periodFinish = block.timestamp.add(rewardsDuration);
   }
 
   /// @notice Updates rewards for all pools by adding pending rewards.
@@ -364,16 +359,16 @@ contract MasterChefMod is Ownable {
     internal
     returns (uint256 _claimed)
   {
-    uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
+    uint256 rewardTokenBal = rewardTokenBalance;
 
     if (_amount > rewardTokenBal) {
       _claimed = rewardTokenBal;
       IERC20(rewardToken).transfer(_to, rewardTokenBal);
-      rewardTokenBalance = IERC20(rewardToken).balanceOf(address(this));
+      rewardTokenBalance = rewardTokenBalance.sub(rewardTokenBal);
     } else {
       _claimed = _amount;
       IERC20(rewardToken).transfer(_to, _amount);
-      rewardTokenBalance = IERC20(rewardToken).balanceOf(address(this));
+      rewardTokenBalance = rewardTokenBalance.sub(_amount);
     }
   }
 
@@ -383,11 +378,11 @@ contract MasterChefMod is Ownable {
   {
     require(
       _token != address(rewardToken),
-      'Masterchef: Cannot withdraw reward tokens'
+      'MasterChefMod: Cannot withdraw reward tokens'
     );
     require(
       poolToken[address(_token)] == false,
-      'Masterchef: Cannot withdraw stake tokens'
+      'MasterChefMod: Cannot withdraw stake tokens'
     );
     IERC20(_token).safeTransfer(msg.sender, _amount);
   }
