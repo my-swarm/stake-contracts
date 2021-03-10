@@ -1,6 +1,8 @@
 require('dotenv').config();
 require('@nomiclabs/hardhat-ethers');
 require('@nomiclabs/hardhat-waffle');
+require('@nomiclabs/hardhat-etherscan');
+require('@nomiclabs/hardhat-web3');
 
 const fs = require('fs');
 // key to launch on testenets
