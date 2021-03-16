@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.7.0;
+pragma solidity >=0.6.0 <0.8.0;
 
 import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 
 contract SWM is ERC20 {
-  constructor(string memory name_, string memory symbol_)
+  constructor()
     public
-    ERC20(name_, symbol_)
+    ERC20('Swarm Token', 'SWM')
   {
     _mint(msg.sender, 100_000_000 ether);
   }

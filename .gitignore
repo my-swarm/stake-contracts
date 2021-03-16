@@ -1,10 +1,13 @@
 node_modules
 .private
 .secret
+.secret-testnet
 yarn-error.log
 .env
 .idea
+.node-version
 
 #Buidler files
 cache
 artifacts
+flat
