@@ -41,7 +41,7 @@ contract MasterChefMod is Ownable {
     uint256 lastUpdateTime; // Last time that distribution happened.
     uint256 accRewardPerShare; // Accumulated rewards per share.
     uint256 totalStaked; // Amount of tokens staked in the pool.
-    uint256 accUndestributedReward; // Accumulated rewards when a pool has no stake in it.
+    uint256 accUndistributedReward; // Accumulated rewards when a pool has no stake in it.
   }
 
   /// @dev Division precision.
@@ -151,7 +151,7 @@ contract MasterChefMod is Ownable {
         lastUpdateTime: lastUpdateTime,
         accRewardPerShare: 0,
         totalStaked: 0,
-        accUndestributedReward: 0
+        accUndistributedReward: 0
       })
     );
 
@@ -188,8 +188,8 @@ contract MasterChefMod is Ownable {
       }
       if (pool.totalStaked == 0) {
         // No one was staking, the pool was accumulating rewards.
-        pending = pool.accUndestributedReward;
-        pool.accUndestributedReward = 0;
+        pending = pool.accUndistributedReward;
+        pool.accUndistributedReward = 0;
       }
 
       if (pending != 0) {
@@ -313,7 +313,7 @@ contract MasterChefMod is Ownable {
       );
     } else {
       pool.accRewardPerShare = pool.accRewardPerShare.add(poolRewardsStored);
-      pool.accUndestributedReward = pool.accUndestributedReward.add(poolRewardsStored);
+      pool.accUndistributedReward = pool.accUndistributedReward.add(poolRewardsStored);
     }
 
     pool.lastUpdateTime = block.timestamp;
