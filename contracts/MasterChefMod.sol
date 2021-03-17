@@ -14,16 +14,8 @@ contract MasterChefMod is Ownable {
 
   event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
   event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-  event ClaimedRewards(
-    address indexed user,
-    uint256 indexed pid,
-    uint256 amount
-  );
-  event EmergencyWithdraw(
-    address indexed user,
-    uint256 indexed pid,
-    uint256 amount
-  );
+  event ClaimedRewards(address indexed user, uint256 indexed pid, uint256 amount);
+  event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
   /// @notice Detail of each user.
   struct UserInfo {
@@ -94,11 +86,7 @@ contract MasterChefMod is Ownable {
   }
 
   /// @notice Average reward per second generated since contract deployment.
-  function avgRewardsPerSecondTotal()
-    external
-    view
-    returns (uint256 avgPerSecond)
-  {
+  function avgRewardsPerSecondTotal() external view returns (uint256 avgPerSecond) {
     return totalCumulativeRewards.div(block.timestamp.sub(timeDeployed));
   }
 
@@ -112,11 +100,7 @@ contract MasterChefMod is Ownable {
   }
 
   /// @notice Display user rewards for a specific pool.
-  function pendingReward(uint256 _pid, address _user)
-    public
-    view
-    returns (uint256)
-  {
+  function pendingReward(uint256 _pid, address _user) public view returns (uint256) {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_pid][_user];
     uint256 accRewardPerShare = pool.accRewardPerShare;
@@ -139,8 +123,7 @@ contract MasterChefMod is Ownable {
       );
     }
 
-    return
-      user.amount.mul(accRewardPerShare).div(precision).sub(user.rewardDebt);
+    return user.amount.mul(accRewardPerShare).div(precision).sub(user.rewardDebt);
   }
 
   /// @notice Add a new pool.
@@ -185,9 +168,7 @@ contract MasterChefMod is Ownable {
       massUpdatePools();
     }
 
-    totalAllocPoint = totalAllocPoint.sub(poolInfo[_pid].allocPoint).add(
-      _allocPoint
-    );
+    totalAllocPoint = totalAllocPoint.sub(poolInfo[_pid].allocPoint).add(_allocPoint);
     poolInfo[_pid].allocPoint = _allocPoint;
   }
 
@@ -203,9 +184,7 @@ contract MasterChefMod is Ownable {
 
       if (user.amount != 0) {
         // User was already staking, add accumulated rewards to pending.
-        pending = user.amount.mul(pool.accRewardPerShare).div(precision).sub(
-          user.rewardDebt
-        );
+        pending = user.amount.mul(pool.accRewardPerShare).div(precision).sub(user.rewardDebt);
       }
       if (pool.totalStaked == 0) {
         // No one was staking, the pool was accumulating rewards.
@@ -221,11 +200,7 @@ contract MasterChefMod is Ownable {
 
     //Transfer in the amounts from user
     if (_amount != 0) {
-      IERC20(pool.token).safeTransferFrom(
-        address(msg.sender),
-        address(this),
-        _amount
-      );
+      IERC20(pool.token).safeTransferFrom(address(msg.sender), address(this), _amount);
 
       user.amount = user.amount.add(_amount);
       pool.totalStaked = pool.totalStaked.add(_amount);
@@ -239,17 +214,11 @@ contract MasterChefMod is Ownable {
   function withdraw(uint256 _pid, uint256 _amount) public {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_pid][msg.sender];
-    require(
-      user.amount >= _amount,
-      'MasterChefMod: Withdraw amount is greater than user stake.'
-    );
+    require(user.amount >= _amount, 'MasterChefMod: Withdraw amount is greater than user stake.');
 
     _updatePool(_pid);
 
-    uint256 pending =
-      user.amount.mul(pool.accRewardPerShare).div(precision).sub(
-        user.rewardDebt
-      );
+    uint256 pending = user.amount.mul(pool.accRewardPerShare).div(precision).sub(user.rewardDebt);
 
     if (pending != 0) {
       uint256 _amountClaimed = _safeRewardTokenTransfer(msg.sender, pending);
@@ -284,10 +253,7 @@ contract MasterChefMod is Ownable {
 
   /// Adds and evenly distributes any rewards that were sent to the contract since last reward update.
   function updateRewards(uint256 amount) external onlyOwner {
-    require(
-      amount != 0,
-      'MasterChefMod: Reward amount must be greater than zero'
-    );
+    require(amount != 0, 'MasterChefMod: Reward amount must be greater than zero');
 
     IERC20(rewardToken).safeTransferFrom(msg.sender, address(this), amount);
     rewardTokenBalance = rewardTokenBalance.add(amount);
@@ -347,9 +313,7 @@ contract MasterChefMod is Ownable {
       );
     } else {
       pool.accRewardPerShare = pool.accRewardPerShare.add(poolRewardsStored);
-      pool.accUndestributedReward = pool.accUndestributedReward.add(
-        poolRewardsStored
-      );
+      pool.accUndestributedReward = pool.accUndestributedReward.add(poolRewardsStored);
     }
 
     pool.lastUpdateTime = block.timestamp;
@@ -372,18 +336,9 @@ contract MasterChefMod is Ownable {
     }
   }
 
-  function withdrawStuckTokens(address _token, uint256 _amount)
-    public
-    onlyOwner
-  {
-    require(
-      _token != address(rewardToken),
-      'MasterChefMod: Cannot withdraw reward tokens'
-    );
-    require(
-      poolToken[address(_token)] == false,
-      'MasterChefMod: Cannot withdraw stake tokens'
-    );
+  function withdrawStuckTokens(address _token, uint256 _amount) public onlyOwner {
+    require(_token != address(rewardToken), 'MasterChefMod: Cannot withdraw reward tokens');
+    require(poolToken[address(_token)] == false, 'MasterChefMod: Cannot withdraw stake tokens');
     IERC20(_token).safeTransfer(msg.sender, _amount);
   }
 }
