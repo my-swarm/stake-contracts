@@ -1,22 +1,21 @@
 const { ethers } = require('hardhat');
 
 const { BigNumber } = ethers;
+const { parseUnits } = ethers.utils;
 
-async function deployContract(
-  contractName,
-  constructorParams = [],
-  signer = null
-) {
-  if (signer === null) signer = (await ethers.getSigners())[0];
+async function getOwner() {
+  return (await ethers.getSigners())[0];
+}
+
+async function deployContract(contractName, constructorParams = [], signer = null) {
+  if (signer === null) signer = await getOwner();
   const factory = await ethers.getContractFactory(contractName, signer);
   const contract = await factory.deploy(...constructorParams);
   await contract.deployed();
   return contract;
 }
-
 async function deployErc20(name) {
-  const signers = await ethers.getSigners();
-  return deployContract('ERC20Mock', signers[4]);
+  return deployContract('Erc20Mock', [], await getOwner());
 }
 
 async function deployChef(swmAddress, rewardsDuration = 30 * 24 * 3600) {
@@ -73,9 +72,49 @@ const duration = {
   },
 };
 
+async function distributeToken(signer, token, holderAddresses, perHolder) {
+  for (const holderAddress of holderAddresses) {
+    await token.connect(signer).transfer(holderAddress, await sanitizeAmount(perHolder, token));
+  }
+}
+
+async function updateAllowance(account, token, spenderAddress, allowance = -1) {
+  if (allowance === -1) {
+    allowance = BigNumber.from(2).pow(256).sub(1);
+  } else {
+    allowance = await sanitizeAmount(allowance, token);
+  }
+  await token.connect(account).approve(spenderAddress, allowance);
+}
+
+async function sanitizeAmount(amount, token) {
+  if (typeof amount === 'number') {
+    const decimals = parseInt(await token.decimals());
+    amount = parseUnits(amount.toString(), decimals);
+  }
+  return amount;
+}
+
+function dumpBn(bn) {
+  console.log(bg.toString());
+}
+
+function dumpBns(bns) {
+  for (const [key, value] of Object.entries(bns)) {
+    console.log(`${key}: ${value.toString()}`);
+  }
+}
+
 module.exports = {
   deployContract,
   deployErc20,
   deployChef,
-  advanceBlock,
+  advanceTime,
+  advanceTimeAndBlock,
+  distributeToken,
+  updateAllowance,
+  dumpBn,
+  dumpBns,
+  TEN_DAYS: 10 * 24 * 3600,
+  TWENTY_DAYS: 10 * 24 * 3600,
 };
