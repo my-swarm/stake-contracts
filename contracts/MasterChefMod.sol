@@ -218,6 +218,8 @@ contract MasterChefMod is Ownable {
       return;
     }
 
+    massUpdatePools();
+
     // note: if increasing rewards after the last period has ended, just divide the amount by period length
     // note: else
     if (block.timestamp >= periodFinish) {
@@ -230,9 +232,6 @@ contract MasterChefMod is Ownable {
 
     totalRewards = totalRewards.add(amount);
     periodFinish = block.timestamp.add(rewardsDuration);
-
-    // note: this used to be before the if (block.timestamp... condition
-    massUpdatePools();
   }
 
   /// @notice Updates rewards for all pools by adding pending rewards.
@@ -252,7 +251,7 @@ contract MasterChefMod is Ownable {
     uint256 poolRewards = _getPoolRewardsSinceLastUpdate(_pid);
 
     if (pool.totalStaked == 0) {
-      //      pool.accRewardPerShare = pool.accRewardPerShare.add(poolRewards); <-- makes no sense?
+      pool.accRewardPerShare = pool.accRewardPerShare.add(poolRewards);
       pool.accUndistributedReward = pool.accUndistributedReward.add(poolRewards);
     } else {
       pool.accRewardPerShare = pool.accRewardPerShare.add(
