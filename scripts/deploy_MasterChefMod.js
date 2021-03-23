@@ -1,8 +1,6 @@
 const fs = require('fs');
 const hre = require('hardhat');
-const ethers = hre.ethers;
-const provider = hre.ethers.provider;
-const timeMachine = require('ganache-time-traveler');
+const { ethers } = hre;
 
 let overrides = {
   // The maximum units of gas for the transaction to use
