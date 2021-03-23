@@ -42,7 +42,7 @@ module.exports = {
         settings: {},
       },
       {
-        version: '0.7.4',
+        version: '0.7.6',
         settings: {},
       },
     ],
