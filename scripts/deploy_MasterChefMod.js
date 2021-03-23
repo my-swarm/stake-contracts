@@ -8,53 +8,59 @@ let overrides = {
   gasPrice: ethers.utils.parseUnits('1.0', 'gwei'),
 };
 
-module.exports = async (root, network) => {
-  if (network == 'xdai') {
-    root.swm = await ethers.getContractAt(
-      'ERC20',
-      '0xaB57C72BFe106E6D4f8D82BC8CAD9614cdd890Fa'
-    );
-  } else if (network == 'localhost') {
-    root.swm = await deploySwm(root);
-  } else if (network == 'fork' || network == 'mainnet') {
-    root.swm = await ethers.getContractAt(
-      'ERC20',
-      '0x3505f494c3f0fed0b594e01fa41dd3967645ca39'
-    );
+async function deployContract(contractName, constructorParams = [], signer = null) {
+  if (signer === null) signer = (await ethers.getSigners())[0];
+  const factory = await ethers.getContractFactory(contractName, signer);
+  const contract = await factory.deploy(...constructorParams);
+  await contract.deployed();
+  return contract;
+}
+
+async function main() {
+  let swm, token1, token2, chef;
+
+  const network = hre.network.name;
+  console.log('deploying...');
+  if (network === 'xdai') {
+    swm = await ethers.getContractAt('ERC20', '0xaB57C72BFe106E6D4f8D82BC8CAD9614cdd890Fa');
+  } else if (network === 'fork' || network === 'mainnet') {
+    swm = await ethers.getContractAt('ERC20', '0x3505f494c3f0fed0b594e01fa41dd3967645ca39');
+  } else if (network === 'localhost') {
+    swm = await deployContract('SWM');
+    token1 = await deployContract('Erc20Mock');
+    token2 = await deployContract('Erc20Mock');
   }
   const day = 86400;
   const rewardsDuration = day * 30;
 
-  async function deploySwm(root) {
-    const SWM = await ethers.getContractFactory('SWM', overrides);
-    const swm = await SWM.deploy('Swarm Token', 'SWM', overrides);
-    await swm.deployed();
-    return swm;
-  }
-
   const amount = ethers.utils.parseEther('1000000');
-  MasterChefMod = await ethers.getContractFactory('MasterChefMod');
-  root.masterChefMod = await MasterChefMod.deploy(
-    root.swm.address,
-    rewardsDuration,
-    overrides
-  );
-  await root.masterChefMod.deployed();
+  chef = await deployContract('MasterChefMod', [swm.address, rewardsDuration, overrides]);
 
-  await root.masterChefMod.add(1, root.swm.address, false);
-  await root.swm.approve(root.masterChefMod.address, amount);
-  await root.masterChefMod.updateRewards(amount);
+  await chef.add(1, swm.address, false);
+
+  await swm.approve(chef.address, amount);
+  await chef.updateRewards(amount);
 
   let contracts = {
-    SwarmToken: root.swm.address,
-    MasterChefMod: root.masterChefMod.address,
+    SwarmToken: swm.address,
+    MasterChefMod: chef.address,
   };
 
-  fs.writeFileSync(
-    `./output/${network}.json`,
-    JSON.stringify(contracts, null, 2),
-    function (err) {
-      if (err) throw err;
-    }
-  );
-};
+  if (network === 'localhost') {
+    await chef.add(2, token1.address, false);
+    await chef.add(5, token2.address, false);
+    contracts.token1 = token1.address;
+    contracts.token2 = token2.address;
+  }
+
+  fs.writeFileSync(`./output/${network}.json`, JSON.stringify(contracts, null, 2), function (err) {
+    if (err) throw err;
+  });
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

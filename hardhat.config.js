@@ -13,6 +13,8 @@ const etherscan_key = process.env.ETHERSCAN_KEY;
 const alchemy_key = process.env.ALCHEMY_KEY;
 const infura_key = process.env.INFURA_KEY;
 
+const alchemyUrl = `https://eth-mainnet.alchemyapi.io/v2/${alchemy_key}`;
+
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
@@ -39,17 +41,23 @@ module.exports = {
     hardhat: {
       gas: 12000000,
       blockGasLimit: 12000000,
+      // forking: {
+      //   url: alchemyUrl,
+      //   blockNumber: 12096271,
+      // },
     },
+    /*
     fork: {
       blockGasLimit: 12000000,
-      url: 'https://eth-mainnet.alchemyapi.io/v2/' + alchemy_key,
+      url: alchemyUrl,
       chainId: 1,
       forking: {
-        blockNumber: 11600501,
+        blockNumber: 12096271,
       },
     },
+ */
     mainnet: {
-      url: 'https://eth-mainnet.alchemyapi.io/v2/' + alchemy_key,
+      url: alchemyUrl,
       chainId: 1,
       gas: 'auto',
       gasPrice: 'auto',
