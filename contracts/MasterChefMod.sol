@@ -46,7 +46,7 @@ contract MasterChefMod is Ownable {
   uint256 private precision = 1e18;
 
   /// @dev Reward token balance.
-  uint256 public rewardTokenBalance; // note: do we need this? erc balance of chef is the same thing, no?
+  uint256 public rewardTokenBalance;
 
   /// @notice Total allocation points. Must be the sum of all allocation points in all pools.
   uint256 public totalAllocPoint;
@@ -221,7 +221,6 @@ contract MasterChefMod is Ownable {
     massUpdatePools();
 
     // note: if increasing rewards after the last period has ended, just divide the amount by period length
-    // note: else
     if (block.timestamp >= periodFinish) {
       rewardRate = amount.mul(precision).div(rewardsDuration);
     } else {
