@@ -10,10 +10,9 @@ const mnemonicTestnet = fs.readFileSync('.secret-testnet').toString().trim();
 const mnemonic = fs.readFileSync('.secret').toString().trim();
 
 const etherscan_key = process.env.ETHERSCAN_KEY;
-const alchemy_key = process.env.ALCHEMY_KEY;
-const infura_key = process.env.INFURA_KEY;
 
-const alchemyUrl = `https://eth-mainnet.alchemyapi.io/v2/${alchemy_key}`;
+const alchemyUrl = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`;
+const alchemyUrlKovan = `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_KEY_KOVAN}`;
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -67,10 +66,10 @@ module.exports = {
       },
     },
     kovan: {
-      url: 'https://kovan.infura.io/v3/' + infura_key,
+      url: alchemyUrlKovan,
       chainId: 42,
-      gas: 'auto',
-      gasPrice: 'auto',
+      gas: 12000000,
+      blockGasLimit: 12000000,
       accounts: {
         mnemonic: mnemonicTestnet,
         path: "m/44'/60'/0'/0",
