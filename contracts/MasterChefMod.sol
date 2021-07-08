@@ -268,7 +268,15 @@ contract MasterChefMod is Ownable {
   {
     PoolInfo storage pool = poolInfo[_pid];
     uint256 lastTimeRewardApplicable = Math.min(block.timestamp, periodFinish);
-    uint256 numSeconds = Math.max(lastTimeRewardApplicable.sub(pool.lastUpdateTime), 0);
+
+    uint256 lastUpdateTime = pool.lastUpdateTime;
+
+    if (lastUpdateTime > lastTimeRewardApplicable) {
+      lastUpdateTime = lastTimeRewardApplicable;
+    }
+
+    uint256 numSeconds = lastTimeRewardApplicable.sub(lastUpdateTime);
+
     return numSeconds.mul(rewardRate).mul(pool.allocPoint).div(totalAllocPoint).div(precision);
   }
 
