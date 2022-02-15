@@ -7,16 +7,16 @@
     "dev": "concurrently \"hardhat node --hostname 0.0.0.0 --show-stack-traces \" \"(sleep 5 && yarn deploy localhost)\""
   },
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.4",
-    "@nomiclabs/hardhat-etherscan": "^3.0.0",
-    "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "chai": "^4.3.4",
-    "concurrently": "^6.0.0",
-    "ethereum-waffle": "^3.3.0",
-    "ethers": "^5.0.32",
-    "hardhat": "^2.8.2",
-    "prettier": "^2.2.1",
-    "prettier-plugin-solidity": "^1.0.0-beta.6"
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-etherscan": "^3.0.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.2",
+    "chai": "^4.3.6",
+    "concurrently": "^7.0.0",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.5.4",
+    "hardhat": "^2.8.4",
+    "prettier": "^2.5.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.19"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^3.4.0",

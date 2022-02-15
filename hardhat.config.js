@@ -27,16 +27,25 @@ module.exports = {
         version: '0.7.6',
         settings: {},
       },
+      {
+        version: '0.8.10',
+        settings: {
+          optimizer: true,
+          runs: 10,
+        }
+      }
     ],
+    // this config is probably wrong but I'm keeping to make sure we keep the bytecode of the old contracts
     optimizer: {
       enabled: true,
       runs: 100,
     },
   },
   etherscan: {
-    // url: 'https://api-ropsten.etherscan.io/api',
-    url: 'https://api.polygonscan.com/api',
-    apiKey: process.env.ETHERSCAN_KEY,
+    apiKey: {
+      mainnet: process.env.ETHERSCAN_API_KEY,
+      polygon: process.env.POLYGONSCAN_API_KEY,
+    },
   },
   networks: {
     hardhat: {
