@@ -21,17 +21,16 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: '0.6.12',
-      },
-      {
+        // kept for diesperse
         version: '0.7.6',
-        settings: {},
       },
       {
         version: '0.8.10',
         settings: {
-          optimizer: true,
-          runs: 10,
+          optimizer: {
+            enabled: true,
+            runs: 10,
+          },
         }
       }
     ],

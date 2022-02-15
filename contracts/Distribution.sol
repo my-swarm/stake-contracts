@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.7.0;
+pragma solidity ^0.8.10;
 
-import '@openzeppelin/contracts/math/SafeMath.sol';
+import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
@@ -41,7 +41,7 @@ contract Distribution is Ownable {
     _;
   }
 
-  constructor(address swmERC20) public {
+  constructor(address swmERC20) {
     _swmERC20 = IERC20(swmERC20);
   }
 
@@ -63,7 +63,7 @@ contract Distribution is Ownable {
       accounts.length == values.length,
       'Distribution: Lengths difference'
     );
-    require(periodEnd < now, 'Distribution: Period end is in future');
+    require(periodEnd < block.timestamp, 'Distribution: Period end is in future');
 
     uint256 sumValues = 0;
 
