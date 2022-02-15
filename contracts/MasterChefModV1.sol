@@ -8,7 +8,7 @@ import '@openzeppelin/contracts/math/SafeMath.sol';
 import '@openzeppelin/contracts/math/Math.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 
-contract MasterChefMod is Ownable {
+contract MasterChefModV1 is Ownable {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 

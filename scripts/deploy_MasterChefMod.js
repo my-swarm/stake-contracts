@@ -4,12 +4,6 @@ const { ethers } = hre;
 
 const { parseUnits } = ethers.utils;
 
-let overrides = {
-  // The maximum units of gas for the transaction to use
-  // gasLimit: 8000000,
-  gasPrice: parseUnits('1.0', 'gwei'),
-};
-
 async function deployContract(contractName, constructorParams = [], signer = null) {
   if (signer === null) signer = (await ethers.getSigners())[0];
   const factory = await ethers.getContractFactory(contractName, signer);
@@ -33,7 +27,7 @@ async function main() {
     swm = await ethers.getContractAt('ERC20', '0x46874BfC5Ed8D1c238F615Bb95c13b99994Aa578');
     token1 = await deployContract('Erc20Mock');
     console.log('token1', token1.address);
-  } else if (network === 'fork' || network === 'mainnet') {
+  } else if (network === 'fork' || network === 'mainnet' || network === 'polygon') {
     swm = await ethers.getContractAt('ERC20', '0x3505f494c3f0fed0b594e01fa41dd3967645ca39');
   } else if (network === 'localhost') {
     swm = await deployContract('SWM');
@@ -43,10 +37,17 @@ async function main() {
   const day = 86400;
   const rewardsDuration = day * 30;
 
-  const amount = parseUnits('1000000');
-  chef = await deployContract('MasterChefMod', [swm.address, rewardsDuration, overrides]);
+  // const amount = parseUnits('1000000');
+  const constructorArguments = [swm.address, rewardsDuration];
+  console.log('Deploying with params', constructorArguments);
+  chef = await deployContract('MasterChefMod', constructorArguments);
   console.log('chef', chef.address);
 
+  await hre.run('verify:verify', {
+    address: chef.address,
+    constructorArguments
+  });
+/*
   t = await chef.add(1, swm.address, false);
   await t.wait();
   console.log('pool 1 added');
@@ -54,7 +55,7 @@ async function main() {
   t = await swm.approve(chef.address, amount);
   await t.wait();
   console.log('swm approved on chef');
-
+*/
   let contracts = {
     SwarmToken: swm.address,
     MasterChefMod: chef.address,

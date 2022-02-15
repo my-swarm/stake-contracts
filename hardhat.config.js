@@ -9,7 +9,7 @@ const mnemonicTestnet = fs.readFileSync('.secret-testnet').toString().trim();
 // key to launch on mainnet
 const mnemonic = fs.readFileSync('.secret').toString().trim();
 
-const etherscan_key = process.env.ETHERSCAN_KEY;
+const privateKey = fs.readFileSync('.private_key').toString().trim();
 
 const alchemyUrl = `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`;
 const alchemyUrlKovan = `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_KEY_KOVAN}`;
@@ -34,7 +34,9 @@ module.exports = {
     },
   },
   etherscan: {
-    apiKey: etherscan_key,
+    // url: 'https://api-ropsten.etherscan.io/api',
+    url: 'https://api.polygonscan.com/api',
+    apiKey: process.env.ETHERSCAN_KEY,
   },
   networks: {
     hardhat: {
@@ -84,6 +86,12 @@ module.exports = {
         mnemonic: mnemonic,
         path: "m/44'/60'/0'/0",
       },
+    },
+    polygon: {
+      url: process.env.ALCHEMY_POLYGON,
+      chainId: 137,
+      accounts: [privateKey],
+      gasPrice: 600000000000,
     },
   },
 };
